@@ -15,6 +15,10 @@
   <img src="https://img.shields.io/badge/Engine-axe--core-success" alt="axe-core" />
 </p>
 
+<p align="center">
+  <a href="RELEASE_NOTES.md">📦 Release Notes</a>
+</p>
+
 ---
 
 ## ✨ At a Glance
@@ -39,14 +43,27 @@
 
 ## 🚀 Quick Start
 
-### 1) Clone
+### Option A) Install from Release ZIP (`.crx`)
+
+1. Download the latest **release ZIP** from GitHub Releases.
+2. Extract the ZIP.
+3. Open `chrome://extensions`.
+4. Enable **Developer Mode**.
+5. Drag and drop the `.crx` file onto the Extensions page.
+6. Click **Add extension** when prompted.
+
+> If Chrome blocks third-party `.crx` installs on your system, use **Option B** (`Load unpacked`) below.
+
+### Option B) Install from source (`Load unpacked`)
+
+#### 1) Clone
 
 ```bash
 git clone <your-repo-url>
 cd SpectrumUI
 ```
 
-### 2) Add `axe.min.js`
+#### 2) Add `axe.min.js`
 
 Download from: https://github.com/dequelabs/axe-core/releases
 
@@ -58,14 +75,14 @@ SpectrumUI/
     axe.min.js
 ```
 
-### 3) Load in Chrome
+#### 3) Load in Chrome
 
 1. Open `chrome://extensions`
 2. Enable **Developer Mode**
 3. Click **Load unpacked**
 4. Select the `SpectrumUI` folder
 
-### 4) Save Gemini API Key
+#### 4) Save Gemini API Key
 
 1. Open SpectrumUI
 2. Paste key in **Gemini API Key**
