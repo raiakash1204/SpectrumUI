@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="sidepanel.css">
   <script src="lib/jspdf.umd.min.js"></script>
   <script src="report.js"></script>
 </head>
@@ -37,6 +38,18 @@
       </button>
     </div>
   </header>
+
+  <!-- Current Page Indicator -->
+  <div id="currentPageIndicator" class="current-page">
+    <span id="currentPageFavicon"></span>
+    <span id="currentPageTitle">No page scanned yet</span>
+  </div>
+
+  <!-- Auto Re-scan Toggle -->
+  <label class="auto-rescan-toggle">
+    <input type="checkbox" id="autoRescanToggle">
+    <span>Auto re-scan on navigation</span>
+  </label>
 
   <!-- Error State -->
   <div id="errorState" class="error-state hidden">
@@ -186,6 +199,6 @@
 
   <script src="ai.js"></script>
   <script src="chatbot.js"></script>
-  <script src="popup.js"></script>
+  <script src="sidepanel.js"></script>
 </body>
 </html>

@@ -39,9 +39,11 @@
         return true; // Keep message channel open for async response
 
       case 'highlightElement':
-        highlightElement(message.selector);
-        sendResponse({ success: true });
-        return false;
+        (async () => {
+          const result = await highlightElementAndGetRect(message.selector);
+          sendResponse(result);
+        })();
+        return true; // async
 
       case 'clearHighlights':
         clearHighlights();
@@ -98,6 +100,44 @@
       }
     } catch (error) {
       console.warn('AccessUI Auditor — Could not highlight element:', selector, error);
+    }
+  }
+
+  /**
+   * Highlight an element and return its bounding rect for screenshot cropping.
+   */
+  async function highlightElementAndGetRect(selector) {
+    if (!selector) return { success: false };
+
+    try {
+      const el = document.querySelector(selector);
+      if (!el) return { success: false };
+
+      // Remove previous highlights
+      clearHighlights();
+
+      // Add highlight class
+      el.classList.add(HIGHLIGHT_CLASS);
+
+      // Scroll into view
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+
+      // Wait for scroll to settle, then return bounding rect
+      await new Promise(r => setTimeout(r, 600));
+      const rect = el.getBoundingClientRect();
+      return {
+        success: true,
+        rect: {
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+          devicePixelRatio: window.devicePixelRatio || 1
+        }
+      };
+    } catch (error) {
+      console.warn('AccessUI Auditor — Could not highlight element:', selector, error);
+      return { success: false };
     }
   }
 

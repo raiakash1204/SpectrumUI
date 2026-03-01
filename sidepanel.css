@@ -1,0 +1,69 @@
+/* ============================================
+   AccessUI Auditor — Side Panel Overrides
+   Loaded after popup.css to adapt layout
+   for the Chrome Side Panel.
+   ============================================ */
+
+body {
+  width: 100%;
+  min-width: 320px;
+  max-width: 100%;
+  max-height: none;
+  height: 100vh;
+  overflow-y: auto;
+  border-radius: 0;
+}
+
+/* ── Current Page Indicator ── */
+
+.current-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 0 16px 0;
+  background: var(--surface2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.current-page img {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+#currentPageTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Auto Re-scan Toggle ── */
+
+.auto-rescan-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin: 8px 16px 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  user-select: none;
+}
+
+.auto-rescan-toggle input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ── Wider violation cards ── */
+
+.violation-card .violation-card-header {
+  padding: 14px 16px;
+}

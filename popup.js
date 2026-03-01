@@ -37,6 +37,8 @@
   const promptOutputText = document.getElementById('promptOutputText');
   const copyPromptBtn = document.getElementById('copyPromptBtn');
   const aiWarningBanner = document.getElementById('aiWarningBanner');
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const themeIcon = document.getElementById('themeIcon');
 
   // ── State ──
   let lastResults = null;
@@ -205,6 +207,7 @@
   function buildViolationCard(violation, explanation, index) {
     const card = document.createElement('div');
     card.className = 'violation-card';
+    card.dataset.impact = violation.impact || 'minor';
 
     const selector = violation.nodes && violation.nodes.length > 0
       ? (violation.nodes[0].target ? violation.nodes[0].target.join(', ') : '')
@@ -277,8 +280,27 @@
       const highlightBtn = document.createElement('button');
       highlightBtn.className = 'btn-small btn-highlight';
       highlightBtn.textContent = '🎯 Highlight';
-      highlightBtn.addEventListener('click', () => {
-        highlightElement(selector);
+      highlightBtn.addEventListener('click', async () => {
+        highlightBtn.textContent = '📸 Capturing...';
+        highlightBtn.disabled = true;
+
+        try {
+          const response = await chrome.runtime.sendMessage({
+            action: 'captureElement',
+            selector: selector
+          });
+
+          highlightBtn.textContent = '🎯 Highlight';
+          highlightBtn.disabled = false;
+
+          if (response && response.success) {
+            cropAndShowScreenshot(response.screenshot, response.rect, card);
+          }
+        } catch (err) {
+          highlightBtn.textContent = '🎯 Highlight';
+          highlightBtn.disabled = false;
+          console.warn('Screenshot capture failed:', err);
+        }
       });
       actions.appendChild(highlightBtn);
     }
@@ -366,6 +388,131 @@
     }
 
     showResults();
+
+    // Build severity filter bar
+    if (scanData.violations.length > 0) {
+      buildFilterBar(scanData.violations);
+    }
+  }
+
+  // ── Severity Filter Bar ──
+  function buildFilterBar(violations) {
+    const counts = { all: violations.length, critical: 0, serious: 0, moderate: 0, minor: 0 };
+    violations.forEach(v => { if (counts[v.impact] !== undefined) counts[v.impact]++; });
+
+    const chips = [
+      { label: 'All',      key: 'all',      color: '#818cf8' },
+      { label: 'Critical', key: 'critical',  color: '#e63946' },
+      { label: 'Serious',  key: 'serious',   color: '#f4a261' },
+      { label: 'Moderate', key: 'moderate',  color: '#ffd166' },
+      { label: 'Minor',    key: 'minor',     color: '#60a5fa' },
+    ];
+
+    const filterChips = document.getElementById('filterChips');
+    const filterCount = document.getElementById('filterCount');
+    const filterBar = document.getElementById('filterBar');
+
+    filterChips.innerHTML = '';
+
+    chips.forEach(chip => {
+      // Hide chips with 0 count (except All)
+      if (chip.key !== 'all' && counts[chip.key] === 0) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'filter-chip' + (chip.key === 'all' ? ' active' : '');
+      btn.dataset.filter = chip.key;
+
+      if (chip.key === 'all') {
+        btn.style.background = chip.color;
+        btn.style.color = 'white';
+      }
+
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'chip-label';
+      labelSpan.textContent = chip.label;
+      btn.appendChild(labelSpan);
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'chip-count';
+      countSpan.textContent = counts[chip.key];
+      btn.appendChild(countSpan);
+
+      btn.addEventListener('click', () => {
+        // Remove active from all chips
+        filterChips.querySelectorAll('.filter-chip').forEach(c => {
+          c.classList.remove('active');
+          c.style.background = 'transparent';
+          c.style.color = '';
+        });
+        // Activate clicked chip
+        btn.classList.add('active');
+        btn.style.background = chip.color;
+        btn.style.color = 'white';
+
+        filterViolations(chip.key);
+
+        // Update filter count text
+        const shown = chip.key === 'all' ? counts.all : counts[chip.key];
+        filterCount.textContent = 'Showing ' + shown + ' of ' + counts.all + ' violations';
+      });
+
+      filterChips.appendChild(btn);
+    });
+
+    filterCount.textContent = 'Showing ' + counts.all + ' of ' + counts.all + ' violations';
+    filterBar.style.display = '';
+  }
+
+  function filterViolations(severityKey) {
+    const cards = violationsList.querySelectorAll('.violation-card');
+    cards.forEach(card => {
+      if (severityKey === 'all') {
+        card.style.display = '';
+      } else {
+        card.style.display = card.dataset.impact === severityKey ? '' : 'none';
+      }
+    });
+  }
+
+  // ── Crop and Show Screenshot ──
+  function cropAndShowScreenshot(dataUrl, rect, cardEl) {
+    const img = new Image();
+    img.onload = () => {
+      const dpr = rect.devicePixelRatio || 1;
+      const padding = 16;
+
+      const cropX = Math.max(0, rect.x * dpr - padding * dpr);
+      const cropY = Math.max(0, rect.y * dpr - padding * dpr);
+      const cropW = Math.min(img.width - cropX, (rect.width + padding * 2) * dpr);
+      const cropH = Math.min(img.height - cropY, (rect.height + padding * 2) * dpr);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = cropW;
+      canvas.height = cropH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+      const croppedDataUrl = canvas.toDataURL('image/png');
+
+      // Find or create screenshot container inside the card
+      let container = cardEl.querySelector('.screenshot-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'screenshot-container';
+        cardEl.appendChild(container);
+      }
+
+      container.innerHTML = `
+        <div class="screenshot-wrapper">
+          <div class="screenshot-label">📸 Element on page</div>
+          <img src="${croppedDataUrl}" class="element-screenshot" alt="Screenshot of affected element">
+          <div class="screenshot-note">Red outline = affected element</div>
+        </div>
+      `;
+
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+    img.src = dataUrl;
   }
 
   // ── Highlight Element on Page ──
@@ -530,6 +677,9 @@
         window.Chatbot.init(chatMessages, savedApiKey, window.lastScanResults);
       }
 
+      // Save to scan history
+      saveToHistory(window.lastScanResults);
+
     } catch (error) {
       console.error('Scan error:', error);
       showError('Scan failed: ' + error.message + '. Try refreshing the page and scanning again.');
@@ -650,9 +800,219 @@
     }
   });
 
+  // ── Theme Toggle ──
+  themeToggleBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const newTheme = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    chrome.storage.local.set({ theme: newTheme });
+    themeIcon.textContent = newTheme === 'dark' ? '\uD83C\uDF19' : '\u2600\uFE0F';
+  });
+
+  // ── History DOM References ──
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+  const historyList = document.getElementById('historyList');
+  const historyHeaderClickArea = document.getElementById('historyHeaderClickArea');
+
+  // ── History: grade helper ──
+  function getGrade(score) {
+    if (score >= 90) return 'Excellent';
+    if (score >= 70) return 'Good';
+    if (score >= 50) return 'Needs Work';
+    return 'Poor';
+  }
+
+  // ── History: relative time formatter ──
+  function formatRelativeTime(isoString) {
+    const now = Date.now();
+    const then = new Date(isoString).getTime();
+    const diff = now - then;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return 'Just now';
+    if (minutes < 60) return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
+    if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return days + ' days ago';
+
+    const d = new Date(isoString);
+    const day = d.getDate();
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return day + ' ' + monthNames[d.getMonth()];
+  }
+
+  // ── History: save to storage ──
+  function saveToHistory(scanResults) {
+    if (!scanResults) return;
+    chrome.storage.local.get({ scanHistory: [] }, (data) => {
+      let history = data.scanHistory || [];
+
+      let domain = '';
+      try {
+        domain = new URL(scanResults.url).hostname;
+      } catch (e) {
+        domain = scanResults.url || 'unknown';
+      }
+
+      const entry = {
+        url: scanResults.url,
+        domain: domain,
+        score: scanResults.score,
+        violations: Array.isArray(scanResults.violations) ? scanResults.violations.length : (scanResults.violations || 0),
+        passes: typeof scanResults.passes === 'number' ? scanResults.passes : 0,
+        timestamp: scanResults.timestamp || new Date().toISOString(),
+        grade: getGrade(scanResults.score)
+      };
+
+      // Remove existing entry for the same domain
+      history = history.filter(h => h.domain !== entry.domain);
+
+      // Prepend new entry
+      history.unshift(entry);
+
+      // Keep only last 5
+      history = history.slice(0, 5);
+
+      chrome.storage.local.set({ scanHistory: history }, () => {
+        loadAndRenderHistory();
+      });
+    });
+  }
+
+  // ── History: load and render ──
+  function loadAndRenderHistory() {
+    chrome.storage.local.get({ scanHistory: [] }, (data) => {
+      renderHistory(data.scanHistory || []);
+    });
+  }
+
+  // ── History: render ──
+  function renderHistory(entries) {
+    if (!historyList) return;
+    historyList.innerHTML = '';
+
+    if (!entries || entries.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'history-empty';
+      empty.textContent = 'No scans yet. Scan a page to see history here.';
+      historyList.appendChild(empty);
+      return;
+    }
+
+    entries.forEach((entry) => {
+      const card = document.createElement('div');
+      card.className = 'history-card';
+
+      // Score badge
+      const badge = document.createElement('div');
+      badge.className = 'history-score-badge';
+      badge.textContent = entry.score;
+      badge.style.background = getScoreColor(entry.score);
+      card.appendChild(badge);
+
+      // Info
+      const info = document.createElement('div');
+      info.className = 'history-info';
+
+      const domainEl = document.createElement('div');
+      domainEl.className = 'history-domain';
+      domainEl.textContent = entry.domain;
+      domainEl.title = entry.url;
+      info.appendChild(domainEl);
+
+      const meta = document.createElement('div');
+      meta.className = 'history-meta';
+      const violationsSpan = document.createElement('span');
+      violationsSpan.className = 'violations-text';
+      violationsSpan.textContent = entry.violations + ' violation' + (entry.violations !== 1 ? 's' : '');
+      meta.appendChild(violationsSpan);
+      meta.appendChild(document.createTextNode(' · ' + formatRelativeTime(entry.timestamp)));
+      info.appendChild(meta);
+
+      card.appendChild(info);
+
+      // Re-scan button
+      const rescanBtn = document.createElement('button');
+      rescanBtn.className = 'history-rescan';
+      rescanBtn.textContent = 'Re-scan';
+      rescanBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        chrome.tabs.create({ url: entry.url });
+      });
+      card.appendChild(rescanBtn);
+
+      historyList.appendChild(card);
+    });
+  }
+
+  // ── History: toggle expand/collapse ──
+  function toggleHistory() {
+    if (!historyList || !toggleHistoryBtn) return;
+    const isExpanded = historyList.classList.contains('expanded');
+    historyList.classList.toggle('expanded', !isExpanded);
+    toggleHistoryBtn.classList.toggle('expanded', !isExpanded);
+  }
+
+  // ── History: event listeners ──
+  if (historyHeaderClickArea) {
+    historyHeaderClickArea.addEventListener('click', (e) => {
+      // Don't toggle if Clear button was clicked
+      if (e.target === clearHistoryBtn) return;
+      toggleHistory();
+    });
+  }
+
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      chrome.storage.local.remove('scanHistory', () => {
+        renderHistory([]);
+      });
+    });
+  }
+
+  // ── Keyboard Shortcut Badge ──
+  function showKeyboardTriggerBadge() {
+    const badge = document.createElement('span');
+    badge.className = 'keyboard-trigger-badge';
+    badge.textContent = '⌨ Alt+Shift+A';
+    const scanBtnParent = scanBtn.parentElement;
+    scanBtnParent.insertBefore(badge, scanBtn);
+    // Remove badge after animation completes
+    setTimeout(() => {
+      if (badge.parentElement) badge.parentElement.removeChild(badge);
+    }, 2200);
+  }
+
   // ── Init ──
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     loadApiKey();
+    loadAndRenderHistory();
+
+    // Load saved theme
+    chrome.storage.local.get('theme', (data) => {
+      const savedTheme = data.theme || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      themeIcon.textContent = savedTheme === 'dark' ? '\uD83C\uDF19' : '\u2600\uFE0F';
+    });
+
+    // Check for keyboard shortcut auto-scan trigger
+    const { autoScan, autoScanTabId } = await chrome.storage.local.get(['autoScan', 'autoScanTabId']);
+
+    if (autoScan) {
+      // Clear the flag immediately
+      await chrome.storage.local.remove(['autoScan', 'autoScanTabId']);
+      // Show a brief "Triggered by keyboard shortcut" label
+      showKeyboardTriggerBadge();
+      // Auto-click the scan button after a short delay for UX
+      setTimeout(() => {
+        document.getElementById('scanBtn').click();
+      }, 300);
+    }
   });
 
   // Also try loading immediately (DOMContentLoaded may have already fired)
