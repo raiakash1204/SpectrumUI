@@ -31,9 +31,9 @@
 
 ## 🖼 Product Demo
 
-![SpectrumUI Product Demo 1](assets/screenshots/spectrumui-dashboard.png)
+![SpectrumUI Product Demo 1](assets/screenshots/spectrumui-1.png)
 
-![SpectrumUI Product Demo 2](assets/screenshots/spectrumui-results.png)
+![SpectrumUI Product Demo 2](assets/screenshots/spectrumui-2.png)
 
 ---
 
