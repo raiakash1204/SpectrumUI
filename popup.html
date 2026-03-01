@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AccessUI Auditor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+  <script src="lib/jspdf.umd.min.js"></script>
+  <script src="report.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#ff6b2b" stroke-width="2"/>
+          <path d="M12 6a1 1 0 011 1v4.586l2.707 2.707a1 1 0 01-1.414 1.414l-3-3A1 1 0 0111 12V7a1 1 0 011-1z" fill="#ff6b2b"/>
+          <circle cx="12" cy="12" r="2" fill="#ff6b2b"/>
+        </svg>
+      </div>
+      <h1 class="header-title">AccessUI Auditor</h1>
+    </div>
+    <div class="header-right">
+      <button id="toggleChatBtn" class="toggle-chat-btn" style="display:none">✦ AI Chat</button>
+      <button id="scanBtn" class="scan-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M1 3h4V1H1v2zm0 12h4v-2H1v2zm0-6h4V7H1v2zm6-6v2h8V3H7zm0 12h8v-2H7v2zm0-6h8V7H7v2z" fill="currentColor"/>
+        </svg>
+        Scan Page
+      </button>
+    </div>
+  </header>
+
+  <!-- Error State -->
+  <div id="errorState" class="error-state hidden">
+    <div class="error-icon">⚠️</div>
+    <p class="error-text" id="errorText">This page cannot be scanned.</p>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingState" class="loading-state hidden">
+    <div class="spinner"></div>
+    <p class="loading-text" id="loadingText">Running scan...</p>
+  </div>
+
+  <!-- API Key Section -->
+  <div class="api-key-section">
+    <label class="api-key-label" for="apiKeyInput">Gemini API Key</label>
+    <div class="api-key-row">
+      <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Paste your Gemini API key (AIza...)">
+      <!-- Free key from aistudio.google.com -->
+      <button id="saveKeyBtn" class="save-key-btn">Save</button>
+    </div>
+    <div id="keyStatus" class="key-status hidden"></div>
+  </div>
+
+  <!-- Results Section -->
+  <div id="resultsSection" class="results-section hidden">
+    <!-- Score Gauge -->
+    <div class="score-container">
+      <svg class="score-ring" viewBox="0 0 140 140">
+        <circle class="score-ring-bg" cx="70" cy="70" r="58" />
+        <circle class="score-ring-fill" id="scoreRingFill" cx="70" cy="70" r="58" />
+      </svg>
+      <div class="score-value" id="scoreValue">0</div>
+      <div class="score-label">Accessibility Score</div>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="summary-bar">
+      <div class="summary-item summary-violations">
+        <span class="summary-count" id="violationCount">0</span>
+        <span class="summary-label">Violations</span>
+      </div>
+      <div class="summary-item summary-passes">
+        <span class="summary-count" id="passCount">0</span>
+        <span class="summary-label">Passes</span>
+      </div>
+      <div class="summary-item summary-incomplete">
+        <span class="summary-count" id="incompleteCount">0</span>
+        <span class="summary-label">Incomplete</span>
+      </div>
+    </div>
+
+    <!-- AI Status -->
+    <div id="aiStatus" class="ai-status hidden">
+      <span class="ai-status-icon">🤖</span>
+      <span class="ai-status-text" id="aiStatusText"></span>
+    </div>
+
+    <!-- AI Warning Banner -->
+    <div id="aiWarningBanner" style="display:none; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; border-radius:6px; padding:10px 14px; font-size:12px; margin-bottom:12px;">
+      ⚠ Some AI explanations could not be loaded.
+      Check the browser console (F12) for details.
+      Make sure your Gemini API key is valid and not rate-limited.
+    </div>
+
+    <!-- Violations List -->
+    <div class="violations-list" id="violationsList"></div>
+
+    <!-- Export Button -->
+    <button id="exportBtn" class="export-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1v9M8 10L5 7m3 3l3-3M2 12v2h12v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Export JSON Report
+    </button>
+
+    <!-- Download PDF Report Button -->
+    <button id="downloadPdfBtn" class="download-pdf-btn hidden">
+      📄 Download PDF Report
+    </button>
+
+    <!-- Generate Fix Prompt Button -->
+    <button id="generatePromptBtn" style="display:none" class="generate-prompt-btn">
+      ⚡ Generate Fix Prompt
+    </button>
+
+    <!-- Prompt Output Box -->
+    <div id="promptOutputBox" style="display:none" class="prompt-output-box">
+      <div class="prompt-output-header">
+        <span>Fix Prompt — ready to copy</span>
+        <button id="copyPromptBtn" class="copy-prompt-btn">Copy ✓</button>
+      </div>
+      <textarea id="promptOutputText" readonly rows="6" class="prompt-output-textarea"></textarea>
+      <p class="prompt-output-hint">
+        Paste this into ChatGPT, Claude, Copilot, or Gemini along with your page HTML.
+      </p>
+    </div>
+
+    <!-- AI Fix Chatbot Panel -->
+    <div id="chatPanel" style="display:none">
+      <div class="chat-header">
+        <span class="chat-title">✦ AI Fix Assistant</span>
+        <button id="clearChatBtn" class="chat-clear-btn">↺</button>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div id="chatChips" class="chat-chips"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Ask about a violation...">
+        <button id="chatSendBtn" class="chat-send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="empty-state">
+    <div class="empty-icon">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="20" stroke="#2a2d38" stroke-width="2"/>
+        <path d="M24 14v12M24 30v2" stroke="#ff6b2b" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <p class="empty-text">Click <strong>Scan Page</strong> to audit this page for accessibility issues.</p>
+  </div>
+
+  <script src="ai.js"></script>
+  <script src="chatbot.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
