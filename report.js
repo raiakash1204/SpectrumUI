@@ -1,5 +1,5 @@
 /**
- * report.js — PDF Report Generation for AccessUI Auditor
+ * report.js — PDF Report Generation for SpectrumUI
  * Uses jsPDF (loaded from CDN) to generate a detailed, client-side PDF accessibility report.
  */
 
@@ -57,6 +57,76 @@ window.generatePDFReport = function (scanResults) {
     if (s === 'serious') return COLORS.orange;
     if (s === 'moderate') return COLORS.yellow;
     return COLORS.textMuted;
+  }
+
+  function calculatePriority(violation) {
+    const severityKey = (violation.impact || 'minor').toLowerCase();
+    const severityMap = { critical: 40, serious: 30, moderate: 15, minor: 5 };
+    const severityPoints = severityMap[severityKey] || 5;
+
+    const elements = Math.max(1, (violation.nodes && violation.nodes.length) ? violation.nodes.length : 0);
+    let elementCountPoints = 5;
+    if (elements >= 21) elementCountPoints = 45;
+    else if (elements >= 11) elementCountPoints = 35;
+    else if (elements >= 6) elementCountPoints = 25;
+    else if (elements >= 2) elementCountPoints = 15;
+
+    const easyRules = new Set([
+      'image-alt', 'input-image-alt', 'area-alt',
+      'html-has-lang', 'html-lang-valid',
+      'document-title', 'meta-viewport',
+      'link-name', 'button-name'
+    ]);
+    const mediumRules = new Set([
+      'label', 'select-name', 'form-field-multiple-labels',
+      'frame-title', 'iframe-title', 'object-alt'
+    ]);
+    const hardRules = new Set([
+      'color-contrast', 'heading-order',
+      'landmark-one-main', 'region',
+      'aria-hidden-focus', 'focus-order-semantics',
+      'tabindex', 'scrollable-region-focusable'
+    ]);
+
+    let fixComplexity = 'Medium';
+    let fixComplexityPoints = 8;
+    if (easyRules.has(violation.id)) {
+      fixComplexity = 'Easy';
+      fixComplexityPoints = 20;
+    } else if (mediumRules.has(violation.id)) {
+      fixComplexity = 'Medium';
+      fixComplexityPoints = 10;
+    } else if (hardRules.has(violation.id)) {
+      fixComplexity = 'Hard';
+      fixComplexityPoints = 3;
+    }
+
+    const tags = Array.isArray(violation.tags) ? violation.tags : [];
+    let userImpact = 5;
+    if (tags.includes('wcag2a')) userImpact = 15;
+    else if (tags.includes('wcag2aa')) userImpact = 10;
+    else if (tags.includes('best-practice')) userImpact = 3;
+
+    const score = severityPoints + elementCountPoints + fixComplexityPoints + userImpact;
+
+    let tier = 'Low';
+    if (score >= 80) tier = 'Fix First';
+    else if (score >= 50) tier = 'High';
+    else if (score >= 25) tier = 'Medium';
+
+    return {
+      score,
+      tier,
+      factors: {
+        fixComplexity
+      }
+    };
+  }
+
+  function isQuickWin(violation) {
+    const priority = violation.priority || calculatePriority(violation);
+    const sev = (violation.impact || 'minor').toLowerCase();
+    return priority.factors.fixComplexity === 'Easy' && (sev === 'critical' || sev === 'serious');
   }
 
   function formatDate(isoString) {
@@ -129,12 +199,77 @@ window.generatePDFReport = function (scanResults) {
     }
   }
 
-  // Sort violations by severity
-  const impactOrder = { critical: 0, serious: 1, moderate: 2, minor: 3 };
-  const sortedViolations = [...violations].sort((a, b) => {
-    return (impactOrder[(a.impact || 'minor').toLowerCase()] || 3) -
-      (impactOrder[(b.impact || 'minor').toLowerCase()] || 3);
-  });
+  // ── Draw Logo on PDF ──
+  function drawLogoOnPDF(doc, x, y, scale) {
+    const s = scale || 1;
+    const w = 80 * s;
+    const h = 50 * s;
+
+    // Background rectangle
+    setFillColor([10, 8, 8]);
+    setDrawColor([42, 45, 56]);
+    doc.setLineWidth(0.3);
+    drawRoundedRect(x, y, w, h, 3, 'FD');
+
+    // Prism triangle
+    const cx = x + w * 0.5;
+    const prismTop = y + 8 * s;
+    const prismBottom = y + 38 * s;
+    const prismLeft = cx - 16 * s;
+    const prismRight = cx + 16 * s;
+
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.5 * s);
+    doc.line(cx, prismTop, prismLeft, prismBottom);
+    doc.line(prismLeft, prismBottom, prismRight, prismBottom);
+    doc.line(prismRight, prismBottom, cx, prismTop);
+
+    // Incoming white beam (from left edge to prism)
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.4 * s);
+    var beamEntryY = y + 25 * s;
+    doc.line(x + 2, beamEntryY, prismLeft + 4 * s, beamEntryY);
+
+    // Spectrum exit point
+    var exitX = prismRight - 3 * s;
+    var exitY = y + 28 * s;
+    var rayLen = (w * 0.38);
+
+    // Seven spectrum rays fanning out
+    var rayColors = [
+      [255, 30, 10],
+      [255, 100, 0],
+      [255, 210, 0],
+      [30, 200, 80],
+      [30, 100, 255],
+      [80, 30, 200],
+      [180, 30, 220]
+    ];
+    var startAngle = -22;
+    var endAngle = 22;
+    var step = (endAngle - startAngle) / (rayColors.length - 1);
+
+    for (var ri = 0; ri < rayColors.length; ri++) {
+      var rc = rayColors[ri];
+      doc.setDrawColor(rc[0], rc[1], rc[2]);
+      doc.setLineWidth(0.7 * s);
+      var angle = (startAngle + step * ri) * Math.PI / 180;
+      var rayEndX = exitX + rayLen * Math.cos(angle);
+      var rayEndY = exitY + rayLen * Math.sin(angle);
+      doc.line(exitX, exitY, rayEndX, rayEndY);
+    }
+
+    // SpectrumUI text below the graphic
+    doc.setFont('helvetica', 'bolditalic');
+    doc.setFontSize(7.5 * s);
+    doc.setTextColor(255, 255, 255);
+    doc.text('SpectrumUI', x + w / 2, y + h - 4 * s, { align: 'center' });
+  }
+
+  // Sort violations by priority
+  const sortedViolations = [...violations]
+    .map(v => ({ ...v, priority: calculatePriority(v) }))
+    .sort((a, b) => b.priority.score - a.priority.score);
 
   // Count severities
   const severityCounts = { critical: 0, serious: 0, moderate: 0, minor: 0 };
@@ -143,17 +278,29 @@ window.generatePDFReport = function (scanResults) {
     severityCounts[imp] = (severityCounts[imp] || 0) + 1;
   }
 
+  const priorityCounts = { fixFirst: 0, high: 0, medium: 0, low: 0 };
+  sortedViolations.forEach(v => {
+    const tier = v.priority.tier;
+    if (tier === 'Fix First') priorityCounts.fixFirst++;
+    else if (tier === 'High') priorityCounts.high++;
+    else if (tier === 'Medium') priorityCounts.medium++;
+    else priorityCounts.low++;
+  });
+
   // ════════════════════════════════════════
   // PAGE 1 — COVER PAGE
   // ════════════════════════════════════════
   totalPages = 1;
   fillPageBg();
 
+  // Logo
+  drawLogoOnPDF(doc, PAGE_W / 2 - 40, 20, 1.0);
+
   // Title
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(28);
   setColor(COLORS.white);
-  centeredText('AccessUI Auditor', 48);
+  centeredText('SpectrumUI', 48);
 
   // Subtitle
   doc.setFontSize(14);
@@ -239,7 +386,7 @@ window.generatePDFReport = function (scanResults) {
   doc.setFontSize(9);
   setColor(COLORS.textMuted);
   doc.setFont('helvetica', 'italic');
-  centeredText('Powered by AccessUI Auditor + Gemini AI', PAGE_H - 20);
+  centeredText('Powered by SpectrumUI + Gemini AI', PAGE_H - 20);
 
   // ════════════════════════════════════════
   // PAGE 2 — EXECUTIVE SUMMARY
@@ -342,7 +489,27 @@ window.generatePDFReport = function (scanResults) {
     y += 11;
   });
 
-  y += 5;
+  y = checkPageBreak(y, 14);
+  setFillColor(COLORS.surface);
+  doc.setGState(new doc.GState({ opacity: 0.5 }));
+  doc.rect(MARGIN, y - 4, CONTENT_W, 9, 'F');
+  doc.setGState(new doc.GState({ opacity: 1 }));
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  setColor(COLORS.purple);
+  doc.text('Priority Breakdown', MARGIN + 4, y);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  setColor(COLORS.white);
+  doc.text(
+    `Fix First: ${priorityCounts.fixFirst} | High: ${priorityCounts.high} | Medium: ${priorityCounts.medium} | Low: ${priorityCounts.low}`,
+    MARGIN + 46,
+    y
+  );
+
+  y += 12;
 
   // WCAG note
   setFillColor(COLORS.surface);
@@ -371,6 +538,7 @@ window.generatePDFReport = function (scanResults) {
 
     sortedViolations.forEach((violation, idx) => {
       const explanation = explanationMap[violation.id] || null;
+      const priority = violation.priority || calculatePriority(violation);
       const severity = explanation ? explanation.severity
         : ((violation.impact || 'minor').charAt(0).toUpperCase() + (violation.impact || 'minor').slice(1));
       const sevColor = getSeverityColor(severity);
@@ -413,6 +581,17 @@ window.generatePDFReport = function (scanResults) {
       doc.setGState(new doc.GState({ opacity: 1 }));
       setColor(sevColor);
       doc.text(severity.toUpperCase(), sevBadgeX + 3, y + 4.5);
+
+      // Priority badge inline
+      const priBadgeX = sevBadgeX + sevBadgeLabelW + 4;
+      setFillColor(COLORS.purple);
+      doc.setGState(new doc.GState({ opacity: 0.18 }));
+      const priLabel = `PRIORITY ${priority.score}/120 · ${priority.tier.toUpperCase()}`;
+      const priBadgeW = doc.setFont('helvetica', 'bold').setFontSize(7).getTextWidth(priLabel) + 6;
+      drawRoundedRect(priBadgeX, y + 0.5, priBadgeW, 5.5, 2, 'F');
+      doc.setGState(new doc.GState({ opacity: 1 }));
+      setColor(COLORS.purple);
+      doc.text(priLabel, priBadgeX + 3, y + 4.5);
 
       y += 11;
 
@@ -511,7 +690,7 @@ window.generatePDFReport = function (scanResults) {
   doc.text('Recommendations', MARGIN, y);
   y += 12;
 
-  // Top 5 violations by severity
+  // Top 5 violations by priority
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   setColor(COLORS.white);
@@ -528,6 +707,8 @@ window.generatePDFReport = function (scanResults) {
   } else {
     top5.forEach((v, i) => {
       const explanation = explanationMap[v.id] || null;
+      const priority = v.priority || calculatePriority(v);
+      const quickWin = isQuickWin(v);
       const sev = explanation ? explanation.severity
         : ((v.impact || 'minor').charAt(0).toUpperCase() + (v.impact || 'minor').slice(1));
       const sevColor = getSeverityColor(sev);
@@ -556,6 +737,19 @@ window.generatePDFReport = function (scanResults) {
       doc.setFontSize(8);
       setColor(COLORS.textMuted);
       doc.text(v.id, MARGIN + 13 + sevBW + 3, y);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      setColor(COLORS.purple);
+      doc.text(`Priority ${priority.score}/120`, MARGIN + 55 + sevBW, y);
+
+      if (quickWin) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        setColor(COLORS.green);
+        doc.text('✓ Quick Win', PAGE_W - MARGIN - 25, y);
+      }
+
       y += 5;
 
       // Short description
@@ -611,7 +805,7 @@ window.generatePDFReport = function (scanResults) {
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(9);
   setColor(COLORS.textMuted);
-  centeredText('Powered by AccessUI Auditor + Gemini AI', y);
+  centeredText('Powered by SpectrumUI + Gemini AI', y);
 
   // ════════════════════════════════════════
   // PAGE NUMBERS — "Page X of Y" on every page
@@ -630,6 +824,6 @@ window.generatePDFReport = function (scanResults) {
   // ════════════════════════════════════════
   const domain = getDomain(url);
   const dateStr = new Date().toISOString().slice(0, 10);
-  const filename = `accessui-report-${domain}-${dateStr}.pdf`;
+  const filename = `spectrumui-report-${domain}-${dateStr}.pdf`;
   doc.save(filename);
 };

@@ -1,5 +1,5 @@
 /**
- * chatbot.js — AI Fix Chatbot for AccessUI Auditor
+ * chatbot.js — AI Fix Chatbot for SpectrumUI
  * Provides a conversational interface to Gemini AI for fixing accessibility violations.
  */
 
@@ -19,7 +19,7 @@
       .map(v => `${v.id} (${v.impact || 'minor'})`)
       .join(', ');
 
-    return `You are an expert web accessibility engineer and WCAG consultant embedded inside the AccessUI Auditor Chrome Extension.
+    return `You are an expert web accessibility engineer and WCAG consultant embedded inside the SpectrumUI Chrome Extension.
 The user has just scanned this page: ${results.url || 'Unknown URL'}
 Accessibility score: ${results.score || 0}/100
 Violations found: ${(results.violations || []).length} total — ${violationList || 'none'}

@@ -3,202 +3,684 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AccessUI Auditor</title>
+  <title>SpectrumUI — Accessibility Scanner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Mono:wght@400;500&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230a0808'/%3E%3Cpolygon points='16,6 24,26 8,26' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cline x1='24' y1='20' x2='30' y2='14' stroke='%23ff1e0a' stroke-width='1.2'/%3E%3Cline x1='24' y1='20' x2='30' y2='20' stroke='%231ec850' stroke-width='1.2'/%3E%3Cline x1='24' y1='20' x2='30' y2='26' stroke='%231e64ff' stroke-width='1.2'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="sidepanel.css">
   <script src="lib/jspdf.umd.min.js"></script>
   <script src="report.js"></script>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header-left">
-      <div class="logo-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="#ff6b2b" stroke-width="2"/>
-          <path d="M12 6a1 1 0 011 1v4.586l2.707 2.707a1 1 0 01-1.414 1.414l-3-3A1 1 0 0111 12V7a1 1 0 011-1z" fill="#ff6b2b"/>
-          <circle cx="12" cy="12" r="2" fill="#ff6b2b"/>
+  <div class="panel-root">
+
+    <!-- ═══ Header ═══ -->
+    <header class="spectrum-header">
+      <div class="header-logo-mark">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="75 25 255 220" width="56" height="42" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="sui-h-beamIn" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+              <stop offset="60%" stop-color="rgba(255,255,255,0.6)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-prismLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.08)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-prismRight" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.04)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.01)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-prismBottom" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.03)"/>
+              <stop offset="50%" stop-color="rgba(255,255,255,0.07)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayRed" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,30,10,0)"/>
+              <stop offset="30%" stop-color="rgba(255,30,10,0.7)"/>
+              <stop offset="100%" stop-color="rgba(255,30,10,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,100,0,0)"/>
+              <stop offset="30%" stop-color="rgba(255,100,0,0.7)"/>
+              <stop offset="100%" stop-color="rgba(255,100,0,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayYellow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,210,0,0)"/>
+              <stop offset="30%" stop-color="rgba(255,210,0,0.7)"/>
+              <stop offset="100%" stop-color="rgba(255,210,0,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(30,200,80,0)"/>
+              <stop offset="30%" stop-color="rgba(30,200,80,0.7)"/>
+              <stop offset="100%" stop-color="rgba(30,200,80,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(30,100,255,0)"/>
+              <stop offset="30%" stop-color="rgba(30,100,255,0.7)"/>
+              <stop offset="100%" stop-color="rgba(30,100,255,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayIndigo" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(80,30,200,0)"/>
+              <stop offset="30%" stop-color="rgba(80,30,200,0.7)"/>
+              <stop offset="100%" stop-color="rgba(80,30,200,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-h-rayViolet" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(180,30,220,0)"/>
+              <stop offset="30%" stop-color="rgba(180,30,220,0.7)"/>
+              <stop offset="100%" stop-color="rgba(180,30,220,0.9)"/>
+            </linearGradient>
+            <filter id="sui-h-glowWhite" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="sui-h-glowSpectrum" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="1.8" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="sui-h-softGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            </filter>
+            <filter id="sui-h-beamGlow" x="-100%" y="-200%" width="300%" height="500%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Incoming beam -->
+          <line x1="0" y1="150" x2="158" y2="150" stroke="rgba(255,255,255,0.06)" stroke-width="18" filter="url(#sui-h-beamGlow)"/>
+          <line x1="0" y1="150" x2="158" y2="150" stroke="url(#sui-h-beamIn)" stroke-width="2" filter="url(#sui-h-glowWhite)"/>
+          <line x1="40" y1="150" x2="156" y2="150" stroke="rgba(255,255,255,0.95)" stroke-width="0.8"/>
+          <!-- Prism -->
+          <polygon points="200,40 310,230 90,230" fill="rgba(255,255,255,0.018)" stroke="none"/>
+          <polygon points="200,40 90,230 200,230" fill="url(#sui-h-prismLeft)" stroke="none"/>
+          <polygon points="200,40 310,230 200,230" fill="url(#sui-h-prismRight)" stroke="none"/>
+          <rect x="90" y="225" width="220" height="10" fill="url(#sui-h-prismBottom)" opacity="0.5"/>
+          <line x1="200" y1="40" x2="90" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="200" y1="40" x2="310" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="90" y1="230" x2="310" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="200" cy="40" r="1.5" fill="rgba(255,255,255,0.6)"/>
+          <circle cx="90" cy="230" r="1.2" fill="rgba(255,255,255,0.3)"/>
+          <circle cx="310" cy="230" r="1.2" fill="rgba(255,255,255,0.3)"/>
+          <!-- Entry point -->
+          <circle cx="158" cy="150" r="2.5" fill="rgba(255,255,255,0.9)" filter="url(#sui-h-glowWhite)"/>
+          <line x1="158" y1="150" x2="265" y2="185" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,4"/>
+          <!-- Spectrum rays -->
+          <polygon points="265,185 400,128 400,136" fill="url(#sui-h-rayRed)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="132" stroke="rgba(255,30,10,0.3)" stroke-width="8" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,148 400,158" fill="url(#sui-h-rayOrange)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="153" stroke="rgba(255,100,0,0.25)" stroke-width="7" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,168 400,178" fill="url(#sui-h-rayYellow)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="173" stroke="rgba(255,210,0,0.25)" stroke-width="7" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,188 400,198" fill="url(#sui-h-rayGreen)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="193" stroke="rgba(30,200,80,0.25)" stroke-width="7" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,208 400,218" fill="url(#sui-h-rayBlue)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="213" stroke="rgba(30,100,255,0.25)" stroke-width="7" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,228 400,238" fill="url(#sui-h-rayIndigo)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="233" stroke="rgba(80,30,200,0.25)" stroke-width="7" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,248 400,258" fill="url(#sui-h-rayViolet)" opacity="0.85" filter="url(#sui-h-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="253" stroke="rgba(180,30,220,0.25)" stroke-width="7" filter="url(#sui-h-beamGlow)" opacity="0.4"/>
+          <line x1="265" y1="185" x2="400" y2="128" stroke="rgba(255,60,30,0.6)" stroke-width="0.6"/>
+          <line x1="265" y1="185" x2="400" y2="258" stroke="rgba(200,50,240,0.6)" stroke-width="0.6"/>
+          <!-- Exit point -->
+          <circle cx="265" cy="185" r="3" fill="rgba(255,255,255,0.95)" filter="url(#sui-h-glowWhite)"/>
+          <circle cx="265" cy="185" r="6" fill="rgba(255,255,255,0.15)" filter="url(#sui-h-softGlow)"/>
         </svg>
       </div>
-      <h1 class="header-title">AccessUI Auditor</h1>
+      <div class="header-text-group">
+        <span class="header-brand">SpectrumUI</span>
+        <span class="header-tagline">Accessibility through the full spectrum</span>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="icon-btn" title="Toggle theme" aria-label="Toggle dark/light mode">
+          <span id="themeIcon">◐</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══ Current Page Indicator ═══ -->
+    <div id="currentPageIndicator" class="current-page">
+      <span id="currentPageFavicon"></span>
+      <span id="currentPageTitle">No page scanned yet</span>
     </div>
-    <div class="header-right">
-      <button id="themeToggleBtn" title="Toggle theme" aria-label="Toggle dark/light mode">
-        <span id="themeIcon">🌙</span>
-      </button>
-      <button id="toggleChatBtn" class="toggle-chat-btn" style="display:none">✦ AI Chat</button>
-      <button id="scanBtn" class="scan-btn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M1 3h4V1H1v2zm0 12h4v-2H1v2zm0-6h4V7H1v2zm6-6v2h8V3H7zm0 12h8v-2H7v2zm0-6h8V7H7v2z" fill="currentColor"/>
+
+    <!-- ═══ Auto Re-scan Toggle ═══ -->
+    <label class="auto-rescan-toggle">
+      <input type="checkbox" id="autoRescanToggle">
+      <span>Auto re-scan on navigation</span>
+    </label>
+
+    <!-- ═══ Error State ═══ -->
+    <div id="errorState" class="error-state hidden">
+      <div class="error-icon">⚠️</div>
+      <p class="error-text" id="errorText">This page cannot be scanned.</p>
+    </div>
+
+    <!-- ═══ Loading State ═══ -->
+    <div id="loadingState" class="loading-state hidden">
+      <div class="loading-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="120 30 160 210" width="80" height="106" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="sui-l-prismLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.08)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-prismRight" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.04)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.01)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-prismBottom" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.03)"/>
+              <stop offset="50%" stop-color="rgba(255,255,255,0.07)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayRed" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,30,10,0)"/>
+              <stop offset="30%" stop-color="rgba(255,30,10,0.7)"/>
+              <stop offset="100%" stop-color="rgba(255,30,10,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,100,0,0)"/>
+              <stop offset="30%" stop-color="rgba(255,100,0,0.7)"/>
+              <stop offset="100%" stop-color="rgba(255,100,0,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayYellow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(255,210,0,0)"/>
+              <stop offset="30%" stop-color="rgba(255,210,0,0.7)"/>
+              <stop offset="100%" stop-color="rgba(255,210,0,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(30,200,80,0)"/>
+              <stop offset="30%" stop-color="rgba(30,200,80,0.7)"/>
+              <stop offset="100%" stop-color="rgba(30,200,80,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(30,100,255,0)"/>
+              <stop offset="30%" stop-color="rgba(30,100,255,0.7)"/>
+              <stop offset="100%" stop-color="rgba(30,100,255,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayIndigo" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(80,30,200,0)"/>
+              <stop offset="30%" stop-color="rgba(80,30,200,0.7)"/>
+              <stop offset="100%" stop-color="rgba(80,30,200,0.9)"/>
+            </linearGradient>
+            <linearGradient id="sui-l-rayViolet" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="rgba(180,30,220,0)"/>
+              <stop offset="30%" stop-color="rgba(180,30,220,0.7)"/>
+              <stop offset="100%" stop-color="rgba(180,30,220,0.9)"/>
+            </linearGradient>
+            <filter id="sui-l-glowWhite" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="sui-l-glowSpectrum" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="1.8" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="sui-l-softGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            </filter>
+            <filter id="sui-l-beamGlow" x="-100%" y="-200%" width="300%" height="500%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Prism -->
+          <polygon points="200,40 310,230 90,230" fill="rgba(255,255,255,0.018)" stroke="none"/>
+          <polygon points="200,40 90,230 200,230" fill="url(#sui-l-prismLeft)" stroke="none"/>
+          <polygon points="200,40 310,230 200,230" fill="url(#sui-l-prismRight)" stroke="none"/>
+          <rect x="90" y="225" width="220" height="10" fill="url(#sui-l-prismBottom)" opacity="0.5"/>
+          <line x1="200" y1="40" x2="90" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="200" y1="40" x2="310" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="90" y1="230" x2="310" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="200" cy="40" r="1.5" fill="rgba(255,255,255,0.6)"/>
+          <circle cx="90" cy="230" r="1.2" fill="rgba(255,255,255,0.3)"/>
+          <circle cx="310" cy="230" r="1.2" fill="rgba(255,255,255,0.3)"/>
+          <!-- Internal refraction -->
+          <line x1="158" y1="150" x2="265" y2="185" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,4"/>
+          <!-- Spectrum rays -->
+          <polygon points="265,185 400,128 400,136" fill="url(#sui-l-rayRed)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="132" stroke="rgba(255,30,10,0.3)" stroke-width="8" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,148 400,158" fill="url(#sui-l-rayOrange)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="153" stroke="rgba(255,100,0,0.25)" stroke-width="7" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,168 400,178" fill="url(#sui-l-rayYellow)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="173" stroke="rgba(255,210,0,0.25)" stroke-width="7" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,188 400,198" fill="url(#sui-l-rayGreen)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="193" stroke="rgba(30,200,80,0.25)" stroke-width="7" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,208 400,218" fill="url(#sui-l-rayBlue)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="213" stroke="rgba(30,100,255,0.25)" stroke-width="7" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,228 400,238" fill="url(#sui-l-rayIndigo)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="233" stroke="rgba(80,30,200,0.25)" stroke-width="7" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <polygon points="265,185 400,248 400,258" fill="url(#sui-l-rayViolet)" opacity="0.85" filter="url(#sui-l-glowSpectrum)"/>
+          <line x1="265" y1="185" x2="400" y2="253" stroke="rgba(180,30,220,0.25)" stroke-width="7" filter="url(#sui-l-beamGlow)" opacity="0.4"/>
+          <line x1="265" y1="185" x2="400" y2="128" stroke="rgba(255,60,30,0.6)" stroke-width="0.6"/>
+          <line x1="265" y1="185" x2="400" y2="258" stroke="rgba(200,50,240,0.6)" stroke-width="0.6"/>
+          <!-- Exit point -->
+          <circle cx="265" cy="185" r="3" fill="rgba(255,255,255,0.95)" filter="url(#sui-l-glowWhite)"/>
+          <circle cx="265" cy="185" r="6" fill="rgba(255,255,255,0.15)" filter="url(#sui-l-softGlow)"/>
         </svg>
-        Scan Page
-      </button>
-    </div>
-  </header>
-
-  <!-- Current Page Indicator -->
-  <div id="currentPageIndicator" class="current-page">
-    <span id="currentPageFavicon"></span>
-    <span id="currentPageTitle">No page scanned yet</span>
-  </div>
-
-  <!-- Auto Re-scan Toggle -->
-  <label class="auto-rescan-toggle">
-    <input type="checkbox" id="autoRescanToggle">
-    <span>Auto re-scan on navigation</span>
-  </label>
-
-  <!-- Error State -->
-  <div id="errorState" class="error-state hidden">
-    <div class="error-icon">⚠️</div>
-    <p class="error-text" id="errorText">This page cannot be scanned.</p>
-  </div>
-
-  <!-- Loading State -->
-  <div id="loadingState" class="loading-state hidden">
-    <div class="spinner"></div>
-    <p class="loading-text" id="loadingText">Running scan...</p>
-  </div>
-
-  <!-- API Key Section -->
-  <div class="api-key-section">
-    <label class="api-key-label" for="apiKeyInput">Gemini API Key</label>
-    <div class="api-key-row">
-      <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Paste your Gemini API key (AIza...)">
-      <!-- Free key from aistudio.google.com -->
-      <button id="saveKeyBtn" class="save-key-btn">Save</button>
-    </div>
-    <div id="keyStatus" class="key-status hidden"></div>
-  </div>
-
-  <!-- Results Section -->
-  <div id="resultsSection" class="results-section hidden">
-    <!-- Score Gauge -->
-    <div class="score-container">
-      <svg class="score-ring" viewBox="0 0 140 140">
-        <circle class="score-ring-bg" cx="70" cy="70" r="58" />
-        <circle class="score-ring-fill" id="scoreRingFill" cx="70" cy="70" r="58" />
-      </svg>
-      <div class="score-value" id="scoreValue">0</div>
-      <div class="score-label">Accessibility Score</div>
-    </div>
-
-    <!-- Summary Bar -->
-    <div class="summary-bar">
-      <div class="summary-item summary-violations">
-        <span class="summary-count" id="violationCount">0</span>
-        <span class="summary-label">Violations</span>
       </div>
-      <div class="summary-item summary-passes">
-        <span class="summary-count" id="passCount">0</span>
-        <span class="summary-label">Passes</span>
+      <p class="loading-text" id="loadingText">Running scan...</p>
+      <p class="loading-sub">Analyzing accessibility issues…</p>
+    </div>
+
+    <!-- ═══ API Key Section ═══ -->
+    <div class="api-section">
+      <label class="field-label">
+        <span class="label-dot" style="background:var(--amber)"></span>
+        Gemini API Key
+      </label>
+      <div class="api-input-row">
+        <input type="password" id="apiKeyInput" class="field-input"
+               placeholder="AIza••••••••••••••••••" autocomplete="off">
+        <button id="saveKeyBtn" class="btn-save">Save</button>
       </div>
-      <div class="summary-item summary-incomplete">
-        <span class="summary-count" id="incompleteCount">0</span>
-        <span class="summary-label">Incomplete</span>
+      <div id="keyStatus" class="key-status hidden"></div>
+      <span class="field-hint">
+        Free key from
+        <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a>
+      </span>
+    </div>
+
+    <!-- ═══ Framework Selector ═══ -->
+    <div class="framework-row">
+      <label class="field-label">
+        <span class="label-dot" style="background:var(--cobalt)"></span>
+        Framework
+        <span id="frameworkAutoDetected" class="auto-detected-badge" style="display:none">auto-detected</span>
+      </label>
+      <div class="framework-strip" id="frameworkOptions">
+        <button class="framework-btn active" data-framework="html">🌐 HTML</button>
+        <button class="framework-btn" data-framework="react">⚛ React</button>
+        <button class="framework-btn" data-framework="nextjs">▲ Next</button>
+        <button class="framework-btn" data-framework="vue">💚 Vue</button>
+        <button class="framework-btn" data-framework="angular">🔴 Angular</button>
+        <button class="framework-btn" data-framework="svelte">🔥 Svelte</button>
       </div>
     </div>
 
-    <!-- AI Status -->
-    <div id="aiStatus" class="ai-status hidden">
-      <span class="ai-status-icon">🤖</span>
-      <span class="ai-status-text" id="aiStatusText"></span>
-    </div>
-
-    <!-- AI Warning Banner -->
-    <div id="aiWarningBanner" style="display:none; background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; border-radius:6px; padding:10px 14px; font-size:12px; margin-bottom:12px;">
-      ⚠ Some AI explanations could not be loaded.
-      Check the browser console (F12) for details.
-      Make sure your Gemini API key is valid and not rate-limited.
-    </div>
-
-    <!-- Severity Filter Bar -->
-    <div id="filterBar" style="display:none">
-      <div class="filter-chips" id="filterChips"></div>
-      <span class="filter-count" id="filterCount"></span>
-    </div>
-
-    <!-- Violations List -->
-    <div class="violations-list" id="violationsList"></div>
-
-    <!-- Export Button -->
-    <button id="exportBtn" class="export-btn">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 1v9M8 10L5 7m3 3l3-3M2 12v2h12v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Export JSON Report
+    <!-- ═══ Scan Button ═══ -->
+    <button id="scanBtn" class="scan-btn">
+      <span class="scan-btn-inner">
+        <svg class="scan-icon" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+          <path d="M11 8v6M8 11h6" opacity="0.5"/>
+        </svg>
+        <span class="scan-btn-text">Scan for Accessibility Issues</span>
+      </span>
+      <span class="scan-btn-hint">⌨ Alt+Shift+A</span>
     </button>
 
-    <!-- Download PDF Report Button -->
-    <button id="downloadPdfBtn" class="download-pdf-btn hidden">
-      📄 Download PDF Report
-    </button>
+    <!-- ═══ Panel Content ═══ -->
+    <div class="panel-content">
 
-    <!-- Generate Fix Prompt Button -->
-    <button id="generatePromptBtn" style="display:none" class="generate-prompt-btn">
-      ⚡ Generate Fix Prompt
-    </button>
+      <!-- ─── Results Section ─── -->
+      <div id="resultsSection" class="results-section hidden">
 
-    <!-- Prompt Output Box -->
-    <div id="promptOutputBox" style="display:none" class="prompt-output-box">
-      <div class="prompt-output-header">
-        <span>Fix Prompt — ready to copy</span>
-        <button id="copyPromptBtn" class="copy-prompt-btn">Copy ✓</button>
-      </div>
-      <textarea id="promptOutputText" readonly rows="6" class="prompt-output-textarea"></textarea>
-      <p class="prompt-output-hint">
-        Paste this into ChatGPT, Claude, Copilot, or Gemini along with your page HTML.
-      </p>
-    </div>
-
-    <!-- AI Fix Chatbot Panel -->
-    <div id="chatPanel" style="display:none">
-      <div class="chat-header">
-        <span class="chat-title">✦ AI Fix Assistant</span>
-        <button id="clearChatBtn" class="chat-clear-btn">↺</button>
-      </div>
-      <div id="chatMessages" class="chat-messages"></div>
-      <div id="chatChips" class="chat-chips"></div>
-      <div class="chat-input-row">
-        <input type="text" id="chatInput" class="chat-input" placeholder="Ask about a violation...">
-        <button id="chatSendBtn" class="chat-send-btn">Send</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Empty State -->
-  <div id="emptyState" class="empty-state">
-    <div class="empty-icon">
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <circle cx="24" cy="24" r="20" stroke="#2a2d38" stroke-width="2"/>
-        <path d="M24 14v12M24 30v2" stroke="#ff6b2b" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <p class="empty-text">Click <strong>Scan Page</strong> to audit this page for accessibility issues.</p>
-    <span class="shortcut-hint">⌨ Alt+Shift+A to scan from anywhere</span>
-  </div>
-
-  <!-- History Section -->
-  <div style="padding: 0 16px 12px;">
-    <div class="section-divider"></div>
-
-    <div id="historySection">
-      <div class="history-header" id="historyHeaderClickArea">
-        <span class="history-title">🕓 Recent Scans</span>
-        <div class="history-actions">
-          <button id="clearHistoryBtn">Clear</button>
-          <button id="toggleHistoryBtn">&#9662;</button>
+        <!-- Score Display -->
+        <div class="score-display">
+          <div class="score-gauge-wrap">
+            <svg class="score-gauge" viewBox="0 0 120 70" width="200" height="120">
+              <!-- Background arc -->
+              <path class="gauge-bg" d="M10,65 A55,55 0 1,1 110,65"
+                    fill="none" stroke="var(--score-ring-bg)"
+                    stroke-width="6" stroke-linecap="round"/>
+              <!-- Value arc — animated by JS -->
+              <path class="gauge-fill" id="scoreRingFill"
+                    d="M10,65 A55,55 0 1,1 110,65"
+                    fill="none" stroke="var(--amber)"
+                    stroke-width="6" stroke-linecap="round"
+                    stroke-dasharray="346" stroke-dashoffset="346"/>
+            </svg>
+            <div class="score-center">
+              <span class="score-number" id="scoreValue">0</span>
+              <span class="score-slash">/100</span>
+            </div>
+          </div>
+          <div class="score-grade" id="scoreGrade"></div>
+          <div class="score-stats">
+            <div class="stat-chip stat-violations">
+              <span class="stat-num" id="violationCount">—</span>
+              <span class="stat-name">Violations</span>
+            </div>
+            <div class="stat-chip stat-passes">
+              <span class="stat-num" id="passCount">—</span>
+              <span class="stat-name">Passes</span>
+            </div>
+            <div class="stat-chip stat-incomplete">
+              <span class="stat-num" id="incompleteCount">—</span>
+              <span class="stat-name">Incomplete</span>
+            </div>
+          </div>
         </div>
+
+        <!-- AI Status -->
+        <div id="aiStatus" class="ai-status hidden">
+          <span class="ai-status-icon">✦</span>
+          <span class="ai-status-text" id="aiStatusText"></span>
+        </div>
+
+        <!-- AI Warning Banner -->
+        <div id="aiWarningBanner" class="ai-warning-banner" style="display:none">
+          ⚠ Some AI explanations could not be loaded.
+          Check the browser console (F12) for details.
+          Make sure your Gemini API key is valid and not rate-limited.
+        </div>
+
+        <!-- Severity Filter Bar -->
+        <div id="filterBar" class="filter-bar" style="display:none">
+          <div class="filter-chips" id="filterChips"></div>
+          <span class="filter-count" id="filterCount"></span>
+        </div>
+
+        <!-- Sort Row -->
+        <div class="sort-row" style="display:none">
+          <span class="sort-label">Sort by:</span>
+          <select id="sortSelect">
+            <option value="priority">Priority Score</option>
+            <option value="severity">Severity</option>
+            <option value="elements">Elements Affected</option>
+            <option value="complexity-asc">Easiest First</option>
+          </select>
+        </div>
+
+        <!-- Priority Summary -->
+        <div id="prioritySummary" class="priority-summary" style="display:none">
+          <span class="ps-label">Priority:</span>
+          <span class="ps-item ps-fixfirst" id="psFixFirst">0 Fix First</span>
+          <span class="ps-item ps-high" id="psHigh">0 High</span>
+          <span class="ps-item ps-medium" id="psMedium">0 Medium</span>
+          <span class="ps-item ps-low" id="psLow">0 Low</span>
+          <span class="ps-quickwins" id="psQuickWins">0 quick wins</span>
+        </div>
+
+        <!-- Colour Blindness Simulator -->
+        <div id="colorblindSection" class="cb-section">
+          <div class="colorblind-header">
+            <span class="colorblind-title">👁 Colour Blindness Simulator</span>
+            <span class="colorblind-subtitle">Preview how the page looks</span>
+          </div>
+
+          <div class="cb-grid" id="colorblindGrid">
+            <button class="cb-btn active" data-type="normal">
+              <span class="cb-swatch"></span>
+              <span class="cb-label">Normal</span>
+            </button>
+            <button class="cb-btn" data-type="deuteranopia">
+              <span class="cb-swatch cb-deuteranopia"></span>
+              <span class="cb-label">Deuteranopia</span>
+              <span class="cb-stat">6% of men</span>
+            </button>
+            <button class="cb-btn" data-type="protanopia">
+              <span class="cb-swatch cb-protanopia"></span>
+              <span class="cb-label">Protanopia</span>
+              <span class="cb-stat">2% of men</span>
+            </button>
+            <button class="cb-btn" data-type="tritanopia">
+              <span class="cb-swatch cb-tritanopia"></span>
+              <span class="cb-label">Tritanopia</span>
+              <span class="cb-stat">Rare</span>
+            </button>
+            <button class="cb-btn" data-type="achromatopsia">
+              <span class="cb-swatch cb-achromatopsia"></span>
+              <span class="cb-label">Greyscale</span>
+              <span class="cb-stat">Total CB</span>
+            </button>
+            <button class="cb-btn" data-type="contrast">
+              <span class="cb-swatch cb-contrast"></span>
+              <span class="cb-label">Low Contrast</span>
+              <span class="cb-stat">Sensitivity</span>
+            </button>
+          </div>
+
+          <div id="cbActiveLabel" class="cb-active-label" style="display:none">
+            <span id="cbActiveName"></span> simulation active on page
+            <button id="cbResetBtn">Reset to Normal</button>
+          </div>
+        </div>
+
+        <!-- Violations List -->
+        <div class="violations-list" id="violationsList"></div>
+
+        <!-- Action Row -->
+        <div class="action-row">
+          <button id="downloadPdfBtn" class="action-btn hidden">
+            <span class="action-btn-icon">⬇</span>
+            PDF Report
+          </button>
+          <button id="generatePromptBtn" class="action-btn action-btn-green" style="display:none">
+            <span class="action-btn-icon">⚡</span>
+            Fix Prompt
+          </button>
+          <button id="toggleChatBtn" class="action-btn action-btn-amber" style="display:none">
+            <span class="action-btn-icon">✦</span>
+            AI Chat
+          </button>
+        </div>
+
+        <!-- Export JSON (secondary) -->
+        <button id="exportBtn" class="export-btn">
+          Export JSON Report
+        </button>
+
+        <!-- Prompt Output Box -->
+        <div id="promptOutputBox" class="prompt-output-box" style="display:none">
+          <div class="prompt-output-header">
+            <span>Fix Prompt — ready to copy</span>
+            <button id="copyPromptBtn" class="copy-prompt-btn">Copy ✓</button>
+          </div>
+          <textarea id="promptOutputText" readonly rows="6" class="prompt-output-textarea"></textarea>
+          <p class="prompt-output-hint">
+            Paste this into ChatGPT, Claude, Copilot, or Gemini along with your page HTML.
+          </p>
+        </div>
+
+        <!-- AI Fix Chatbot Panel -->
+        <div id="chatPanel" class="chat-panel" style="display:none">
+          <div class="chat-header">
+            <span class="chat-title">AI Fix Assistant</span>
+            <button id="clearChatBtn" class="chat-clear-btn">↺</button>
+          </div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <div id="chatChips" class="chat-chips"></div>
+          <div class="chat-input-area">
+            <div class="chat-input-row">
+              <input type="text" id="chatInput" placeholder="Ask about a violation...">
+              <button id="chatSendBtn">➤</button>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div id="historyList"></div>
+      <!-- ─── End Results Section ─── -->
+
+      <!-- ─── Empty State ─── -->
+      <div id="emptyState" class="empty-state welcome-state">
+        <div class="welcome-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="240" height="180">
+            <defs>
+              <radialGradient id="sui-w-bgGrad" cx="50%" cy="50%" r="70%">
+                <stop offset="0%" stop-color="#0a0808"/>
+                <stop offset="100%" stop-color="#000000"/>
+              </radialGradient>
+              <radialGradient id="sui-w-vignette" cx="50%" cy="50%" r="70%">
+                <stop offset="50%" stop-color="transparent"/>
+                <stop offset="100%" stop-color="rgba(0,0,0,0.7)"/>
+              </radialGradient>
+              <linearGradient id="sui-w-beamIn" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+                <stop offset="60%" stop-color="rgba(255,255,255,0.6)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-prismLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.08)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-prismRight" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.04)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.01)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-prismBottom" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.03)"/>
+                <stop offset="50%" stop-color="rgba(255,255,255,0.07)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(255,30,10,0)"/>
+                <stop offset="30%" stop-color="rgba(255,30,10,0.7)"/>
+                <stop offset="100%" stop-color="rgba(255,30,10,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayOrange" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(255,100,0,0)"/>
+                <stop offset="30%" stop-color="rgba(255,100,0,0.7)"/>
+                <stop offset="100%" stop-color="rgba(255,100,0,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayYellow" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(255,210,0,0)"/>
+                <stop offset="30%" stop-color="rgba(255,210,0,0.7)"/>
+                <stop offset="100%" stop-color="rgba(255,210,0,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(30,200,80,0)"/>
+                <stop offset="30%" stop-color="rgba(30,200,80,0.7)"/>
+                <stop offset="100%" stop-color="rgba(30,200,80,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(30,100,255,0)"/>
+                <stop offset="30%" stop-color="rgba(30,100,255,0.7)"/>
+                <stop offset="100%" stop-color="rgba(30,100,255,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayIndigo" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(80,30,200,0)"/>
+                <stop offset="30%" stop-color="rgba(80,30,200,0.7)"/>
+                <stop offset="100%" stop-color="rgba(80,30,200,0.9)"/>
+              </linearGradient>
+              <linearGradient id="sui-w-rayViolet" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(180,30,220,0)"/>
+                <stop offset="30%" stop-color="rgba(180,30,220,0.7)"/>
+                <stop offset="100%" stop-color="rgba(180,30,220,0.9)"/>
+              </linearGradient>
+              <filter id="sui-w-glowWhite" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="sui-w-glowSpectrum" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="1.8" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="sui-w-softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+              <filter id="sui-w-beamGlow" x="-100%" y="-200%" width="300%" height="500%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <clipPath id="sui-w-prismClip">
+                <polygon points="200,40 310,230 90,230"/>
+              </clipPath>
+            </defs>
+            <!-- Background -->
+            <rect width="400" height="300" fill="url(#sui-w-bgGrad)"/>
+            <rect width="400" height="300" fill="url(#sui-w-vignette)"/>
+            <!-- Incoming beam -->
+            <line x1="0" y1="150" x2="158" y2="150" stroke="rgba(255,255,255,0.06)" stroke-width="18" filter="url(#sui-w-beamGlow)"/>
+            <line x1="0" y1="150" x2="158" y2="150" stroke="url(#sui-w-beamIn)" stroke-width="2" filter="url(#sui-w-glowWhite)"/>
+            <line x1="40" y1="150" x2="156" y2="150" stroke="rgba(255,255,255,0.95)" stroke-width="0.8"/>
+            <!-- Prism -->
+            <polygon points="200,40 310,230 90,230" fill="rgba(255,255,255,0.018)" stroke="none"/>
+            <polygon points="200,40 90,230 200,230" fill="url(#sui-w-prismLeft)" stroke="none"/>
+            <polygon points="200,40 310,230 200,230" fill="url(#sui-w-prismRight)" stroke="none"/>
+            <rect x="90" y="225" width="220" height="10" fill="url(#sui-w-prismBottom)" opacity="0.5"/>
+            <line x1="200" y1="40" x2="90" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="200" y1="40" x2="310" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="90" y1="230" x2="310" y2="230" stroke="rgba(255,255,255,0.75)" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="200" cy="40" r="1.5" fill="rgba(255,255,255,0.6)"/>
+            <circle cx="90" cy="230" r="1.2" fill="rgba(255,255,255,0.3)"/>
+            <circle cx="310" cy="230" r="1.2" fill="rgba(255,255,255,0.3)"/>
+            <!-- Entry point -->
+            <circle cx="158" cy="150" r="2.5" fill="rgba(255,255,255,0.9)" filter="url(#sui-w-glowWhite)"/>
+            <line x1="158" y1="150" x2="265" y2="185" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,4"/>
+            <!-- Spectrum rays -->
+            <polygon points="265,185 400,128 400,136" fill="url(#sui-w-rayRed)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="132" stroke="rgba(255,30,10,0.3)" stroke-width="8" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <polygon points="265,185 400,148 400,158" fill="url(#sui-w-rayOrange)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="153" stroke="rgba(255,100,0,0.25)" stroke-width="7" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <polygon points="265,185 400,168 400,178" fill="url(#sui-w-rayYellow)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="173" stroke="rgba(255,210,0,0.25)" stroke-width="7" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <polygon points="265,185 400,188 400,198" fill="url(#sui-w-rayGreen)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="193" stroke="rgba(30,200,80,0.25)" stroke-width="7" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <polygon points="265,185 400,208 400,218" fill="url(#sui-w-rayBlue)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="213" stroke="rgba(30,100,255,0.25)" stroke-width="7" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <polygon points="265,185 400,228 400,238" fill="url(#sui-w-rayIndigo)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="233" stroke="rgba(80,30,200,0.25)" stroke-width="7" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <polygon points="265,185 400,248 400,258" fill="url(#sui-w-rayViolet)" opacity="0.85" filter="url(#sui-w-glowSpectrum)"/>
+            <line x1="265" y1="185" x2="400" y2="253" stroke="rgba(180,30,220,0.25)" stroke-width="7" filter="url(#sui-w-beamGlow)" opacity="0.4"/>
+            <line x1="265" y1="185" x2="400" y2="128" stroke="rgba(255,60,30,0.6)" stroke-width="0.6"/>
+            <line x1="265" y1="185" x2="400" y2="258" stroke="rgba(200,50,240,0.6)" stroke-width="0.6"/>
+            <!-- Exit point -->
+            <circle cx="265" cy="185" r="3" fill="rgba(255,255,255,0.95)" filter="url(#sui-w-glowWhite)"/>
+            <circle cx="265" cy="185" r="6" fill="rgba(255,255,255,0.15)" filter="url(#sui-w-softGlow)"/>
+            <!-- Wordmark -->
+            <text x="200" y="268" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" font-style="italic" fill="rgba(255,255,255,0.9)" text-anchor="middle" letter-spacing="-0.5">SpectrumUI</text>
+            <text x="200" y="284" font-family="'Courier New', monospace" font-size="7.5" font-weight="400" fill="rgba(255,255,255,0.3)" text-anchor="middle" letter-spacing="2.5">ACCESSIBILITY THROUGH THE FULL SPECTRUM</text>
+            <line x1="110" y1="257" x2="290" y2="257" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+          </svg>
+        </div>
+        <div class="welcome-text">
+          <h2 class="welcome-title">Ready to scan</h2>
+          <p class="welcome-desc">
+            Enter your Gemini API key above, then scan any page
+            to get a full accessibility report with AI-powered fixes.
+          </p>
+        </div>
+        <div class="spectrum-line">
+          <div class="spectrum-line-inner"></div>
+        </div>
+        <span class="shortcut-hint">⌨ Alt+Shift+A to scan from anywhere</span>
+      </div>
+
+      <!-- ─── History Section ─── -->
+      <div id="historySection" class="history-section">
+        <div class="section-header" id="historyHeaderClickArea">
+          <span class="section-title">
+            <span class="section-title-icon">◷</span>
+            Recent Scans
+          </span>
+          <div class="history-actions">
+            <button id="clearHistoryBtn" class="history-clear-btn">Clear</button>
+            <button id="toggleHistoryBtn" class="section-toggle">▾</button>
+          </div>
+        </div>
+        <div id="historyList"></div>
+      </div>
+
     </div>
+    <!-- ═══ End Panel Content ═══ -->
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="spectrum-footer">
+      <span class="footer-text">
+        Made with
+        <span class="footer-heart">♥</span>
+        by
+        <a href="https://github.com/raiakash1204"
+           target="_blank"
+           class="footer-link">Akash Rai</a>
+      </span>
+    </footer>
+
   </div>
 
   <script src="ai.js"></script>
   <script src="chatbot.js"></script>
+  <script src="colorblind.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AccessUI Auditor",
+  "name": "SpectrumUI",
   "version": "1.0.0",
   "description": "AI-powered accessibility scanner that uses axe-core and Gemini AI to analyze web pages and provide plain-English explanations with code fixes.",
   "permissions": [
@@ -21,13 +21,16 @@
   },
   "action": {
     "default_icon": {
-      "48": "icons/icon48.png"
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     },
-    "default_title": "AccessUI Auditor"
+    "default_title": "SpectrumUI"
   },
   "icons": {
+    "16": "icons/icon16.png",
     "48": "icons/icon48.png",
-    "128": "icons/icon48.png"
+    "128": "icons/icon128.png"
   },
   "background": {
     "service_worker": "background.js"
@@ -52,7 +55,7 @@
         "default": "Alt+Shift+S",
         "mac": "Alt+Shift+S"
       },
-      "description": "Open AccessUI Auditor popup"
+      "description": "Open SpectrumUI popup"
     }
   }
 }

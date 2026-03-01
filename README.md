@@ -1,4 +1,4 @@
-# AccessUI Auditor
+# SpectrumUI
 
 An AI-powered Chrome Extension that scans any webpage for accessibility issues using [axe-core](https://github.com/dequelabs/axe-core), scores the page from 0–100, and uses the Google Gemini API to explain each violation in plain English with specific code fixes.
 
@@ -17,7 +17,7 @@ An AI-powered Chrome Extension that scans any webpage for accessibility issues u
 
 ```bash
 git clone <repo-url>
-cd accessui-auditor
+cd spectrumui
 ```
 
 Or download and extract the ZIP.
@@ -29,7 +29,7 @@ Download `axe.min.js` from the [axe-core GitHub releases](https://github.com/deq
 Place it at:
 
 ```
-accessui-auditor/
+spectrumui/
   lib/
     axe.min.js    ← place here
 ```
@@ -45,7 +45,7 @@ mkdir lib
 1. Open Chrome and navigate to `chrome://extensions`
 2. Enable **Developer Mode** (toggle in the top-right corner)
 3. Click **"Load unpacked"**
-4. Select the `accessui-auditor` folder (the one containing `manifest.json`)
+4. Select the `spectrumui` folder (the one containing `manifest.json`)
 
 ### 4. Enter your API key
 
@@ -66,7 +66,7 @@ Your key is stored locally in `chrome.storage.local` and never sent anywhere exc
 ## How to Use
 
 1. **Navigate** to any website you want to audit
-2. **Click** the AccessUI Auditor extension icon in the toolbar, then click **Scan Page**
+2. **Click** the SpectrumUI extension icon in the toolbar, then click **Scan Page**
 3. **Review** the accessibility score, violation cards with AI explanations, and use the highlight feature to locate issues on the page
 
 ---
@@ -89,7 +89,7 @@ Your key is stored locally in `chrome.storage.local` and never sent anywhere exc
 - **AI Explanations** — Gemini translates technical violations into plain English
 - **Code Fixes** — Each violation includes a suggested code fix
 - **Element Highlighting** — Click "Highlight" to locate the offending element on the page
-- **JSON Export** — Download the full report as `accessui-report.json`
+- **JSON Export** — Download the full report as `spectrumui-report.json`
 - **Graceful Degradation** — Works without an API key (shows raw axe-core descriptions)
 
 ---
@@ -107,7 +107,7 @@ Your key is stored locally in `chrome.storage.local` and never sent anywhere exc
 ## File Structure
 
 ```
-accessui-auditor/
+spectrumui/
 ├── manifest.json      # Extension manifest (MV3)
 ├── popup.html         # Popup UI markup
 ├── popup.css          # Popup styles (dark theme)

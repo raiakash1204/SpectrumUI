@@ -1,5 +1,6 @@
 /**
- * popup.js — Main logic for SpectrumUI popup
+ * sidepanel.js — Main logic for SpectrumUI side panel
+ * Based on popup.js with added tab tracking and auto re-scan.
  */
 
 (function () {
@@ -39,11 +40,17 @@
   const aiWarningBanner = document.getElementById('aiWarningBanner');
   const themeToggleBtn = document.getElementById('themeToggleBtn');
   const themeIcon = document.getElementById('themeIcon');
+  const currentPageTitle = document.getElementById('currentPageTitle');
+  const currentPageFavicon = document.getElementById('currentPageFavicon');
+  const autoRescanToggle = document.getElementById('autoRescanToggle');
   const sortSelect = document.getElementById('sortSelect');
+  const scoreGrade = document.getElementById('scoreGrade');
 
   // ── State ──
   let lastResults = null;
   let currentApiKey = '';
+  let autoRescanEnabled = false;
+  let autoScanTimer = null;
   window.selectedFramework = 'html';
   window.currentViolations = [];
   window.currentSeverityFilter = 'all';
@@ -221,19 +228,19 @@
 
     let tier = 'Low';
     let tierEmoji = '🔵';
-    let tierColor = '#60a5fa';
+    let tierColor = '#3060b0';
     if (score >= 80) {
       tier = 'Fix First';
       tierEmoji = '🔥';
-      tierColor = '#e63946';
+      tierColor = '#c84030';
     } else if (score >= 50) {
       tier = 'High';
       tierEmoji = '⚡';
-      tierColor = '#f4a261';
+      tierColor = '#c87820';
     } else if (score >= 25) {
       tier = 'Medium';
       tierEmoji = '📋';
-      tierColor = '#ffd166';
+      tierColor = '#a09030';
     }
 
     return {
@@ -332,10 +339,10 @@
 
   // ── Score Color ──
   function getScoreColor(score) {
-    if (score >= 90) return '#06d6a0';
-    if (score >= 70) return '#ffd166';
-    if (score >= 50) return '#f4a261';
-    return '#e63946';
+    if (score >= 90) return '#40907a';
+    if (score >= 70) return '#a09030';
+    if (score >= 50) return '#c87820';
+    return '#c84030';
   }
 
   // ── UI State Helpers ──
@@ -372,10 +379,11 @@
 
   // ── Animate Score ──
   function animateScore(targetScore) {
-    const circumference = 2 * Math.PI * 58; // r=58
+    const circumference = scoreRingFill.getTotalLength();
     const color = getScoreColor(targetScore);
 
     scoreRingFill.style.stroke = color;
+    scoreRingFill.setAttribute('stroke-dasharray', circumference);
 
     // Animate the ring fill
     const offset = circumference - (targetScore / 100) * circumference;
@@ -389,6 +397,16 @@
         scoreRingFill.style.strokeDashoffset = offset;
       });
     });
+
+    // Update score grade label
+    if (scoreGrade) {
+      let grade = 'Poor';
+      if (targetScore >= 90) grade = 'Excellent';
+      else if (targetScore >= 70) grade = 'Good';
+      else if (targetScore >= 50) grade = 'Needs Work';
+      scoreGrade.textContent = grade;
+      scoreGrade.style.color = color;
+    }
 
     // Animate the number
     let current = 0;
@@ -635,11 +653,11 @@
     violations.forEach(v => { if (counts[v.impact] !== undefined) counts[v.impact]++; });
 
     const chips = [
-      { label: 'All',      key: 'all',      color: '#818cf8' },
-      { label: 'Critical', key: 'critical',  color: '#e63946' },
-      { label: 'Serious',  key: 'serious',   color: '#f4a261' },
-      { label: 'Moderate', key: 'moderate',  color: '#ffd166' },
-      { label: 'Minor',    key: 'minor',     color: '#60a5fa' },
+      { label: 'All',      key: 'all',      color: '#706050' },
+      { label: 'Critical', key: 'critical',  color: '#c84030' },
+      { label: 'Serious',  key: 'serious',   color: '#c87820' },
+      { label: 'Moderate', key: 'moderate',  color: '#a09030' },
+      { label: 'Minor',    key: 'minor',     color: '#3060b0' },
     ];
 
     const filterChips = document.getElementById('filterChips');
@@ -770,6 +788,30 @@
     });
   }
 
+  // ── Update Current Page Indicator ──
+  function updatePageIndicator(tab) {
+    if (!tab) return;
+    currentPageTitle.textContent = tab.title || tab.url || 'Unknown page';
+    currentPageFavicon.innerHTML = '';
+    if (tab.favIconUrl) {
+      const img = document.createElement('img');
+      img.src = tab.favIconUrl;
+      img.width = 14;
+      img.height = 14;
+      img.alt = '';
+      currentPageFavicon.appendChild(img);
+    }
+  }
+
+  // ── Auto Re-scan ──
+  function triggerAutoScan() {
+    if (autoScanTimer) clearTimeout(autoScanTimer);
+    autoScanTimer = setTimeout(() => {
+      autoScanTimer = null;
+      runScan();
+    }, 500);
+  }
+
   // ── Run Scan ──
   async function runScan() {
     // Check for API key
@@ -790,6 +832,9 @@
     }
 
     const tab = tabs[0];
+
+    // Update page indicator on scan
+    updatePageIndicator(tab);
 
     // Check if page is scannable
     if (tab.url && (
@@ -1071,18 +1116,46 @@
     const newTheme = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     chrome.storage.local.set({ theme: newTheme });
-    themeIcon.textContent = newTheme === 'dark' ? '\uD83C\uDF19' : '\u2600\uFE0F';
+    themeIcon.textContent = newTheme === 'dark' ? '\u25D0' : '\u25D1';
   });
 
-  chrome.tabs.onActivated.addListener(() => {
-    if (window.ColorBlindSim) {
-      window.ColorBlindSim.remove();
+  // ── Auto Re-scan Toggle ──
+  autoRescanToggle.addEventListener('change', (e) => {
+    autoRescanEnabled = e.target.checked;
+    chrome.storage.local.set({ autoRescan: autoRescanEnabled });
+  });
+
+  // ── Tab Navigation Listeners (side panel specific) ──
+  chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      updatePageIndicator(tab);
+      // Remove colour blindness filter when switching tabs
+      if (window.ColorBlindSim) {
+        window.ColorBlindSim.remove();
+        document.querySelectorAll('.cb-btn').forEach(b => b.classList.remove('active'));
+        const normalBtn = document.querySelector('.cb-btn[data-type="normal"]');
+        if (normalBtn) normalBtn.classList.add('active');
+        const lbl = document.getElementById('cbActiveLabel');
+        if (lbl) lbl.style.display = 'none';
+      }
+      if (autoRescanEnabled) triggerAutoScan();
+    } catch (err) {
+      console.warn('Could not get tab info:', err);
     }
   });
 
-  window.addEventListener('beforeunload', () => {
-    if (window.ColorBlindSim) {
-      window.ColorBlindSim.remove();
+  chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete') {
+      try {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tabId === activeTab.id) {
+          updatePageIndicator(tab);
+          if (autoRescanEnabled) triggerAutoScan();
+        }
+      } catch (err) {
+        console.warn('Could not check active tab:', err);
+      }
     }
   });
 
@@ -1274,8 +1347,15 @@
     chrome.storage.local.get('theme', (data) => {
       const savedTheme = data.theme || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      themeIcon.textContent = savedTheme === 'dark' ? '\uD83C\uDF19' : '\u2600\uFE0F';
+      themeIcon.textContent = savedTheme === 'dark' ? '\u25D0' : '\u25D1';
     });
+
+    // Restore auto-rescan preference
+    const { autoRescan } = await chrome.storage.local.get('autoRescan');
+    if (autoRescan) {
+      autoRescanEnabled = true;
+      autoRescanToggle.checked = true;
+    }
 
     // Load saved framework preference
     const { selectedFramework: savedFw } = await chrome.storage.local.get('selectedFramework');
@@ -1310,6 +1390,16 @@
       }
     } catch (err) {
       console.warn('Could not restore colour sim preference:', err);
+    }
+
+    // Populate current page indicator
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) {
+        updatePageIndicator(tab);
+      }
+    } catch (err) {
+      console.warn('Could not get active tab on init:', err);
     }
 
     // Check for keyboard shortcut auto-scan trigger

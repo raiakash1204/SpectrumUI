@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AccessUI Auditor</title>
+  <title>SpectrumUI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,7 +22,7 @@
           <circle cx="12" cy="12" r="2" fill="#ff6b2b"/>
         </svg>
       </div>
-      <h1 class="header-title">AccessUI Auditor</h1>
+      <h1 class="header-title">SpectrumUI</h1>
     </div>
     <div class="header-right">
       <button id="themeToggleBtn" title="Toggle theme" aria-label="Toggle dark/light mode">
@@ -59,6 +59,34 @@
       <button id="saveKeyBtn" class="save-key-btn">Save</button>
     </div>
     <div id="keyStatus" class="key-status hidden"></div>
+  </div>
+
+  <!-- Framework Selector -->
+  <div class="framework-row">
+    <label class="framework-label">
+      <span>⚙ Framework</span>
+      <span id="frameworkAutoDetected" class="auto-detected-badge" style="display:none">auto-detected</span>
+    </label>
+    <div class="framework-options" id="frameworkOptions">
+      <button class="framework-btn active" data-framework="html">
+        <span class="fw-icon">🌐</span> HTML
+      </button>
+      <button class="framework-btn" data-framework="react">
+        <span class="fw-icon">⚛</span> React
+      </button>
+      <button class="framework-btn" data-framework="nextjs">
+        <span class="fw-icon">▲</span> Next.js
+      </button>
+      <button class="framework-btn" data-framework="vue">
+        <span class="fw-icon">💚</span> Vue
+      </button>
+      <button class="framework-btn" data-framework="angular">
+        <span class="fw-icon">🔴</span> Angular
+      </button>
+      <button class="framework-btn" data-framework="svelte">
+        <span class="fw-icon">🔥</span> Svelte
+      </button>
+    </div>
   </div>
 
   <!-- Results Section -->
@@ -106,6 +134,70 @@
     <div id="filterBar" style="display:none">
       <div class="filter-chips" id="filterChips"></div>
       <span class="filter-count" id="filterCount"></span>
+    </div>
+
+    <div class="sort-row" style="display:none">
+      <span class="sort-label">Sort by:</span>
+      <select id="sortSelect">
+        <option value="priority">Priority Score</option>
+        <option value="severity">Severity</option>
+        <option value="elements">Elements Affected</option>
+        <option value="complexity-asc">Easiest First</option>
+      </select>
+    </div>
+
+    <div id="prioritySummary" style="display:none">
+      <span class="ps-label">Priority breakdown:</span>
+      <span class="ps-item ps-fixfirst" id="psFixFirst">0 Fix First</span>
+      <span class="ps-item ps-high" id="psHigh">0 High</span>
+      <span class="ps-item ps-medium" id="psMedium">0 Medium</span>
+      <span class="ps-item ps-low" id="psLow">0 Low</span>
+      <span class="ps-quickwins" id="psQuickWins">0 quick wins available</span>
+    </div>
+
+    <!-- Colour Blindness Simulator -->
+    <div id="colorblindSection">
+      <div class="colorblind-header">
+        <span class="colorblind-title">👁 Colour Blindness Simulator</span>
+        <span class="colorblind-subtitle">Preview how the page looks</span>
+      </div>
+
+      <div class="colorblind-grid" id="colorblindGrid">
+        <button class="cb-btn active" data-type="normal">
+          <span class="cb-preview cb-normal"></span>
+          <span class="cb-label">Normal</span>
+        </button>
+        <button class="cb-btn" data-type="deuteranopia">
+          <span class="cb-preview cb-deuteranopia"></span>
+          <span class="cb-label">Deuteranopia</span>
+          <span class="cb-stat">6% of men</span>
+        </button>
+        <button class="cb-btn" data-type="protanopia">
+          <span class="cb-preview cb-protanopia"></span>
+          <span class="cb-label">Protanopia</span>
+          <span class="cb-stat">2% of men</span>
+        </button>
+        <button class="cb-btn" data-type="tritanopia">
+          <span class="cb-preview cb-tritanopia"></span>
+          <span class="cb-label">Tritanopia</span>
+          <span class="cb-stat">Rare</span>
+        </button>
+        <button class="cb-btn" data-type="achromatopsia">
+          <span class="cb-preview cb-achromatopsia"></span>
+          <span class="cb-label">Greyscale</span>
+          <span class="cb-stat">Total CB</span>
+        </button>
+        <button class="cb-btn" data-type="contrast">
+          <span class="cb-preview cb-contrast"></span>
+          <span class="cb-label">Low Contrast</span>
+          <span class="cb-stat">Sensitivity</span>
+        </button>
+      </div>
+
+      <div id="cbActiveLabel" class="cb-active-label" style="display:none">
+        <span id="cbActiveName"></span> simulation active on page
+        <button id="cbResetBtn">Reset to Normal</button>
+      </div>
     </div>
 
     <!-- Violations List -->
@@ -186,6 +278,7 @@
 
   <script src="ai.js"></script>
   <script src="chatbot.js"></script>
+  <script src="colorblind.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
