@@ -31,11 +31,9 @@
 
 ## 🖼 Product Demo
 
-> Add your provided screenshots to: `assets/screenshots/`
+![SpectrumUI Product Demo 1](assets/screenshots/spectrumui-dashboard.png)
 
-| Product Demo Image 1 | Product Demo Image 2 |
-|---|---|
-| ![SpectrumUI Product Demo 1](assets/screenshots/spectrumui-dashboard.png) | ![SpectrumUI Product Demo 2](assets/screenshots/spectrumui-results.png) |
+![SpectrumUI Product Demo 2](assets/screenshots/spectrumui-results.png)
 
 ---
 
