@@ -166,9 +166,6 @@ Final score is clamped to `0..100`.
 
 ### Sent externally
 - Only violation payload needed for AI explanation/chat
-- Endpoint: `https://generativelanguage.googleapis.com/*`
-
-No custom backend is used by this project.
 
 ---
 
@@ -179,10 +176,6 @@ No custom backend is used by this project.
 - `storage` — persist key/settings/history
 - `sidePanel` — side panel experience
 - `notifications` — warnings for restricted pages
-
-Host permission:
-- `https://generativelanguage.googleapis.com/*`
-
 ---
 
 ## 📁 Project Structure
@@ -218,18 +211,3 @@ Restricted URLs are blocked (`chrome://`, `about:`, `devtools://`, etc.). Use a 
 Usually key/rate-limit/network related. SpectrumUI retries and falls back to non-AI descriptions.
 
 ---
-
-## ✅ Release Checklist
-
-- [ ] `lib/axe.min.js` exists
-- [ ] icons are present (`16`, `48`, `128`)
-- [ ] shortcuts and side panel behavior tested
-- [ ] JSON/PDF export tested
-- [ ] `manifest.json` version bumped
-- [ ] ready for Chrome Web Store packaging
-
----
-
-## 📜 License
-
-MIT
